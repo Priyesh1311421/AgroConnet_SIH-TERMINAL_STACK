@@ -1,0 +1,142 @@
+const mongoose = require('mongoose');
+const { Blog, Farmer, User } = require('../db/db'); // Adjust the path as necessary
+
+// Get all blogs
+const getBlogs = async (req, res) => {
+    try {
+        const blogs = await Blog.find().populate('author', 'firstName lastName').sort({date: -1});
+        res.status(200).json(blogs);
+    } catch (error) {
+        res.status(404).json({ message: error.message });
+    }
+};
+
+// Get a blog by id
+const getBlog = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const blog = await Blog.findById(id).populate('author', 'firstName lastName').populate('comments.user', 'firstName lastName');
+        res.status(200).json(blog);
+    } catch (error) {
+        res.status(404).json({ message: error.message });
+    }
+};
+
+// Create a blog
+const createBlog = async (req, res) => {
+    const { title, description, author } = req.body;
+    const session = await mongoose.startSession();
+
+    try {
+        session.startTransaction();
+
+        // Create and save the new blog
+        const newBlog = new Blog({ title, description, author });
+        await newBlog.save({ session });
+
+        // Update the farmer's table to add the blog reference
+        await Farmer.findByIdAndUpdate(
+            author, // Assuming author is the farmer's ID
+            { $push: { Blog: newBlog._id } },
+            { session }
+        );
+
+        await session.commitTransaction();
+        session.endSession();
+
+        res.status(201).json(newBlog);
+    } catch (error) {
+        await session.abortTransaction();
+        session.endSession();
+        res.status(409).json({ message: error.message });
+    }
+};
+
+// Update a blog
+const updateBlog = async (req, res) => {
+    const { id } = req.params;
+    const blog = req.body;
+    if (!mongoose.Types.ObjectId.isValid(id)) return res.status(404).send('No blog with that id');
+    const updatedBlog = await Blog.findByIdAndUpdate(id, blog, { new: true });
+    res.json(updatedBlog);
+};
+
+// Delete a blog
+const deleteBlog = async (req, res) => {
+    const blogId = req.params.id;
+    const session = await mongoose.startSession();
+
+    try {
+        session.startTransaction();
+
+        // Find and delete the blog
+        const blog = await Blog.findByIdAndDelete(blogId, { session });
+
+        if (!blog) {
+            await session.abortTransaction();
+            session.endSession();
+            return res.status(404).json({ message: 'Blog not found' });
+        }
+
+        // Update the Farmer collection to remove the reference to the deleted blog
+        await Farmer.updateMany(
+            { Blog: blogId },
+            { $pull: { Blog: blogId } },
+            { session }
+        );
+
+        await session.commitTransaction();
+        session.endSession();
+
+        res.status(200).json({ message: 'Blog deleted successfully' });
+    } catch (error) {
+        await session.abortTransaction();
+        session.endSession();
+        res.status(500).json({ message: 'An error occurred', error });
+    }
+};
+
+// Add like to blog
+const addLike = async (req, res) => {
+    try {
+        const blog = await Blog.findById(req.params.id);
+        if (!blog) {
+            return res.status(404).json({ message: 'Blog not found' });
+        }
+        blog.likes += 1;
+        await blog.save();
+        res.status(200).json(blog);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// Add comment to blog
+const addComment = async (req, res) => {
+    try {
+        const blog = await Blog.findById(req.params.id);
+        if (!blog) {
+            return res.status(404).json({ message: 'Blog not found' });
+        }
+        const { userId, comment } = req.body;
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        blog.comments.push({ user: userId, comment });
+        await blog.save();
+        res.status(200).json(blog);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+module.exports = {
+    deleteBlog,
+    updateBlog,
+    createBlog,
+    getBlog,
+    getBlogs,
+    addLike,
+    addComment,
+};
