@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-mongoose.connect('mongodb+srv://irshadhussain7881:h%40sh@cluster017.pih9e1e.mongodb.net/AgriConnect');
+mongoose.connect(''); // use your own mongo url
 
 // Farmer Schema
 const Farmers = new mongoose.Schema({
@@ -166,6 +166,9 @@ const UserOrderSchema = new mongoose.Schema({
 const Farmer = mongoose.model('Farmer', Farmers);
 const Blog = mongoose.model('Blog', blogSchema);
 const Product = mongoose.model('Product', ProductSchema);
+const UserOrder = mongoose.model('UserOrder', UserOrderSchema);
+const FarmerOrder = mongoose.model('FarmerOrder', FarmerOrderSchema);
+const User = mongoose.model('User', UserSchema);
 const UserOrder = mongoose.model('FarmerOrder', UserOrderSchema);
 const FarmerOrder = mongoose.model('FarmerOrder', FarmerOrderSchema);
 
@@ -175,4 +178,5 @@ module.exports = {
     Product,
     UserOrder,
     FarmerOrder,
+    User,
 };
