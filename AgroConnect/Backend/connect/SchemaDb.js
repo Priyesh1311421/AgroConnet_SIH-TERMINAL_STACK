@@ -169,6 +169,8 @@ const Product = mongoose.model('Product', ProductSchema);
 const UserOrder = mongoose.model('UserOrder', UserOrderSchema);
 const FarmerOrder = mongoose.model('FarmerOrder', FarmerOrderSchema);
 const User = mongoose.model('User', UserSchema);
+const UserOrder = mongoose.model('FarmerOrder', UserOrderSchema);
+const FarmerOrder = mongoose.model('FarmerOrder', FarmerOrderSchema);
 
 module.exports = {
     Farmer,
