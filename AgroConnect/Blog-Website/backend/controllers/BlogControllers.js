@@ -9,7 +9,7 @@ const getBlogs = async (req, res) => {
     } catch (error) {
         res.status(404).json({ message: error.message });
     }
-};
+}; // Adjust the path as necessary
 
 // Get a blog by id
 const getBlog = async (req, res) => {
