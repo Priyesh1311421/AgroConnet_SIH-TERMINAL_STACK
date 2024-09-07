@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import debounce from 'lodash.debounce';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faArrowLeft, faArrowRight } from '@fortawesome/free-solid-svg-icons';
+import { faUser, faArrowLeft, faArrowRight, faHeart } from '@fortawesome/free-solid-svg-icons';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 
@@ -67,11 +67,11 @@ const BlogList = ({ farmerId }) => {
     return (
         <div className="container mx-auto p-4">
             <div className="flex justify-between items-center mb-4">
-                <h1 className="text-4xl font-bold">Blogs</h1>
+                <h1 className="text-3xl font-bold text-blue-500">Blogs</h1>
                 {farmerId && (
                     <button
                         onClick={handleCreateBlog}
-                        className="bg-black text-white px-4 py-2 rounded-full shadow hover:bg-gray-800 transition-colors"
+                        className="bg-blue-500 text-white px-4 py-2 rounded-full shadow hover:bg-blue-600 transition-colors"
                     >
                         Create Blog
                     </button>
@@ -82,7 +82,7 @@ const BlogList = ({ farmerId }) => {
                 value={searchQuery}
                 onChange={handleSearchChange}
                 placeholder="Search by title or author"
-                className="w-full p-3 mb-8 border rounded-lg"
+                className="w-full p-3 mb-8 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-8">
                 {loading ? (
@@ -122,7 +122,13 @@ const BlogList = ({ farmerId }) => {
                             </div>
                             <h2 className="text-2xl font-semibold mb-2">{blog.title}</h2>
                             <p className="text-gray-700 mb-4">{blog.description.substring(0, 100)}...</p>
-                            <span className="text-blue-500 font-semibold">Read more</span>
+                            <div className='flex justify-between pr-4'>
+                                <div className="flex items-center">
+                                    <FontAwesomeIcon icon={faHeart} className="text-red-500 mr-2" />
+                                    <span>{blog.likes}</span>
+                                </div>
+                                <span className="text-blue-500 font-semibold">Read more</span>
+                            </div>
                         </div>
                     ))
                 )}
@@ -131,7 +137,7 @@ const BlogList = ({ farmerId }) => {
                 <button
                     onClick={() => handlePageChange(currentPage - 1)}
                     disabled={currentPage === 1}
-                    className="px-4 py-2 mx-1 rounded bg-gray-200 text-gray-700 disabled:opacity-50"
+                    className={`px-4 py-2 mx-1 rounded-full ${currentPage === 1 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-blue-500 text-white hover:bg-blue-600'}`}
                 >
                     <FontAwesomeIcon icon={faArrowLeft} />
                 </button>
@@ -139,7 +145,7 @@ const BlogList = ({ farmerId }) => {
                     <button
                         key={index}
                         onClick={() => handlePageChange(index + 1)}
-                        className={`px-4 py-2 mx-1 rounded ${currentPage === index + 1 ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+                        className={`px-4 py-2 mx-1 rounded-full ${currentPage === index + 1 ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
                     >
                         {index + 1}
                     </button>
@@ -147,7 +153,7 @@ const BlogList = ({ farmerId }) => {
                 <button
                     onClick={() => handlePageChange(currentPage + 1)}
                     disabled={currentPage === totalPages}
-                    className="px-4 py-2 mx-1 rounded bg-gray-200 text-gray-700 disabled:opacity-50"
+                    className={`px-4 py-2 mx-1 rounded-full ${currentPage === totalPages ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-blue-500 text-white hover:bg-blue-600'}`}
                 >
                     <FontAwesomeIcon icon={faArrowRight} />
                 </button>

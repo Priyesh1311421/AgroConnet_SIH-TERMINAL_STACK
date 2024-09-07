@@ -6,7 +6,8 @@ const {
     updateBlog,
     deleteBlog,
     addLike,
-    addComment
+    addComment,
+    getBlogsByFarmer
 } = require('../controllers/BlogControllers');
 const router = express.Router();
 
@@ -30,5 +31,8 @@ router.post('/:id/like', addLike);
 
 // Route to add a comment to a blog
 router.post('/:id/comment', addComment);
+
+//Route to get the blogs by a farmer
+router.get('/farmer/:id', getBlogsByFarmer);
 
 module.exports = router;
