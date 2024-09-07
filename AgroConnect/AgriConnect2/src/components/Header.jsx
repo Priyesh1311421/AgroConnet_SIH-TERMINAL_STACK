@@ -1,137 +1,267 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {  faUserPlus, faSignInAlt, faUser, faEnvelope, faCog, faSignOutAlt, faBars, faTimes, faSeedling, faBox, faShoppingBag, faPen, faCartArrowDown } from '@fortawesome/free-solid-svg-icons';
+import {  faUserPlus, faSignInAlt, faUser, faEnvelope, faCog, faSignOutAlt, faBars, faTimes, faSeedling, faBox, faShoppingBag, faPen, faCartArrowDown, faReorder, faDashboard, faHome, faMapMarkedAlt, faStore, faChartArea, faMarker, faArrowPointer, faComments, faMessage } from '@fortawesome/free-solid-svg-icons';
 import { boolAtom } from './Loged';
-import { useRecoilValue } from 'recoil';
+import { useRecoilState, useRecoilValue } from 'recoil';
+import { customerAtom } from './customerAtom';
+import { FarmerAtom } from './farmerAtom';
+import { FaAirbnb, FaChromecast, FaJediOrder, FaSnapchat, FaSnapchatSquare } from 'react-icons/fa';
+import axios from 'axios';
+import Dashboard from './Dashboard';
+import { faChromecast, faFirstOrder, faSnapchat } from '@fortawesome/free-brands-svg-icons';
 
 const Header = () => {
     const [side, setSide] = useState(false);
-    // const [verified, setVerified] = useState(true);
-
+    const [verified, setVerified] = useRecoilState(boolAtom);
+    const [isHovered, setHovered] = useState(false);
+    const navigate = useNavigate()
+    const [userBool, setUserBool] = useRecoilState(customerAtom)
+    const [farmerBool, setFarmerBool] = useRecoilState(FarmerAtom)
+    const [currentUser, setCurrentUser] = useState('')
+    const [currentName,setCurrentName] = useState('')
+    
     function setUp() {
         setSide(!side);
     }
-    const verified = useRecoilValue(boolAtom);
+    // FARMER-DATA----
+    useEffect(()=>{
+        const fetch = async ()=>{
+            try{
+                const farmerID = localStorage.getItem('FarmerId')
+                console.log("FarmerID: ",farmerID)
+                if(farmerID){
+                    const response = await axios.get(`http://localhost:5000/currentFarmerData?FarmerID=${farmerID}`)
+                    if(response.status === 200){
+                        const data = response.data.farmerData
+                        console.log(data)
+                        setCurrentUser(data)
+                        const Name = response.data.farmerData.email.split('@')[0]
+                        setCurrentName(Name)
+                    }
+                }else{
+                    console.log("FarmerId not present")
+                }
+            }catch(err){
+                if(err.response && err.response.status === 300){
+                    console.log("Farmer is not LOgged")
+                }else{
+                    console.log("ERROR",err)
+                }
+            }
+        }
+        fetch()
+    },[side])
+    // USER-DATA----
+    useEffect(()=>{
+        const fetch = async ()=>{
+            try{
+                const userID = localStorage.getItem('UserId')
+                if(userID){
+                    const response = await axios.get(`http://localhost:5000/currentUserData?userId=${userID}`)
+                    if(response.status === 200){
+                        const data = response.data.userData
+                        console.log(data)
+                        setCurrentUser(data)
+                        const Name = response.data.userData.email.split('@')[0]
+                        console.log(Name)
+                        setCurrentName(Name)
+                    }
+                }else{
+                    console.log("userId not present")
+                }
+            }catch(err){
+                if(err.response && err.response.status === 404){
+                    console.log("User is not LOgged In")
+                }else if(err.response && err.response.status === 300){
+                    console.log("User is not LOgged In")
+                }else{
+                    console.log("ERROR",err)
+                }
+            }
+        }
+        fetch()
+    },[side])
+
+    useEffect(()=>{
+        const farmerId = localStorage.getItem('FarmerId')
+        const token = localStorage.getItem('token')
+        const UserID = localStorage.getItem('UserId')
+        if( farmerId && token ){
+            setFarmerBool(true)
+            setVerified(true);
+        }else if( UserID && token){
+            setFarmerBool(false)
+            setVerified(true);
+        }else{
+            setVerified(false)
+        }
+    },[verified])
+    
+    const HandleLogOut = ()=>{
+        localStorage.removeItem('FarmerId')
+        localStorage.removeItem('token')
+        localStorage.removeItem('UserId')
+        setVerified(false)
+        setFarmerBool(false)
+        setUp()
+        navigate('/login')
+    }
+
+    // const verified = useRecoilValue(boolAtom);
     // console.log(verified)
 
 
-    const [isHovered, setHovered] = useState(false);
     const toggleHover = () => {
         setHovered(!isHovered);
     };
+    const navigateToDashboard = ()=>{
+        navigate('/dashboard')
+        toast.success('Your Dashboard')
+    }
+    const HandleBOOL = ()=>{
+        setFarmerBool(true)
+    }
 
     return (
-        <header className="flex items-center justify-between bg-green-600 p-4 h-20 w-full">
-            {/* Logo Section */}
-            {/* <div className="text-white text-xl font-bold">
-                AgriConnect
-            </div> */}
+        // <header className="flex items-center justify-between bg-green-600 p-4 h-20 w-full">
+        <header className="flex items-center justify-between bg-white shadow-lg p-4 h-20 w-full">
 
             <div className="flex items-center justify-between p-0 sm:p-1 ">
-                {/* Agriculture Icon for Mobile View */}
+                
                 <div className="block ">
-                    <FontAwesomeIcon icon={faSeedling} className="text-white text-3xl sm:p-0" />
+                    <FontAwesomeIcon icon={faSeedling} className="text-green-600 text-3xl sm:p-0" />
                 </div>
 
-                {/* Text for Desktop View */}
                 <div className="hidden md:block text-white text-xl font-bold">
                     AgriConnect
                 </div>
+                {/* {farmerBool ? <>Yes</> : <>No</>} */}
 
-                {/* Other content like menu, buttons */}
-                <div>
-                    {/* Example: Menu or buttons */}
-                </div>
             </div>
 
-            {/* Navigation Tabs */}
             <nav className="flex sm:space-x-4 space-x-3 ">
-                <Link to="/" className="text-white hover:underline  md:text-xl sm:text-lg ">Home</Link>
-                <Link to="/marketplace" className="text-white hover:underline  md:text-xl sm:text-lg ">Marketplace</Link>
-                <Link to="/chatbot" className="text-white hover:underline   md:text-xl sm:text-lg ">Chatbot</Link>
-                <Link to="/speakeasy" className="text-white hover:underline   md:text-xl sm:text-lg ">SpeakEasy</Link>
+                <Link to="/" className="text-gray-700  font-medium hover:underline  md:text-xl sm:text-lg "><FontAwesomeIcon className='mx-1' icon={faHome} ></FontAwesomeIcon>Home</Link>
+                <Link to="/marketplace" className="text-gray-700  font-medium hover:underline  md:text-xl sm:text-lg "><FontAwesomeIcon className='mx-1' icon={faStore} ></FontAwesomeIcon>Marketplace</Link>
+                <Link to="/chatbot" className=" text-gray-700  font-medium  hover:underline   md:text-xl sm:text-lg "><FontAwesomeIcon className='mx-1' icon={faComments} ></FontAwesomeIcon>Chatbot</Link>
+                <Link to="/speakeasy" className=" text-gray-700  font-medium  hover:underline   md:text-xl sm:text-lg "><FontAwesomeIcon className='mx-1' icon={faMarker} ></FontAwesomeIcon>SpeakEasy</Link>
             </nav>
-            {/* <HeaderWithCompletePanel/> */}
-
-            {/* Profile Section */}
+        
             {verified ? (
                 <>
-                    {/* <div>
-                        <button onClick={setUp} className="text-white hover:underline">Profile</button>
-                    </div> */}
-                    {/* <ProfileButton /> */}
-
                     <div 
                         className="relative flex items-center justify-center" 
                         onMouseEnter={toggleHover} 
                         onMouseLeave={toggleHover}
                     >
-                        {/* Profile Icon */}
+                        
                         <button 
                             onClick={setUp} 
-                            className={`text-white transition-transform duration-300 ${
+                            className={`text-gray-700 transition-transform duration-300 ${
                                 isHovered ? 'transform scale-110' : ''
                             }`}
                         >
-                            <FontAwesomeIcon icon={faUser} className="w-6 h-6" />
+                            <FontAwesomeIcon className="text-gray-700 w-6 h-6" icon={faUser}  />
                         </button>
 
-                        {/* Hover Text */}
                         {isHovered && (
-                            <span className="absolute top-full mt-2 text-sm text-white bg-blue-600 px-2 py-1 rounded shadow-lg transform transition-opacity duration-300 opacity-100">
+                            <span  className="absolute top-full mt-2 text-sm font-medium text-gray-700 bg-white shadow-lg px-2 py-1 rounded transform transition-opacity duration-300 opacity-100">
                                 Profile
                             </span>
                         )}
                     </div>
                 
 
+                    
+                    {side && <div className=" fixed inset-0 bg-black opacity-50 z-40" onClick={setUp}></div>}
 
-                    {side && <div className="fixed inset-0 bg-black opacity-50 z-40" onClick={setUp}></div>}
+                    
+                    <div className={` bg-gray-200 rounded-xl fixed right-0 top-0 h-full sm:w-96 w-56 shadow-lg transform transition-transform ease-in-out duration-300 z-50 ${side ? 'translate-x-0' : 'translate-x-full'}`}>
+                        <div className="p-4 sm:p-0">
+                            <h2 className="text-2xl font-semibold mb-2 text-center mt-3">Your Account</h2>
+                            {/* {farmerBool ? <>Yes</> : <>No</>} */}
+                            <ul className="space-y-0">
+                                <div className=' bg-gray-100 flex-col w-auto h-28 p-4 rounded-xl space-y-2 sm:h-24 sm:px-6 sm:mx-6 sm:space-y-3 sm:mb-0'>
+                                    <li className="flex items-center">
+                                        <FontAwesomeIcon icon={faUser} className="text-purple-800 sm:text-xl" />
+                                        <span className="ml-2 sm:ml-3 sm:text-lg">Username: {currentName}</span>
+                                    </li>
+                                    <li className="flex items-center">
+                                        <FontAwesomeIcon icon={faEnvelope} className="text-purple-800 sm:text-xl" />
+                                        <span className="ml-2 sm:ml-3 sm:text-lg">Email: {currentUser.email}</span>
+                                    </li>
+                                </div>
+                                {farmerBool ? 
+                                    <>
+                                        <div className="bg-gray-200 p-6 rounded-lg shadow-lg max-w-md mx-auto space-y-4">
+                                            <ul className="space-y-4">
+                                                
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 ">
+                                                    <li className="flex items-center bg-gray-100 h-16 w-full p-3 rounded-xl hover:bg-gray-50 transition-all">
+                                                        <FontAwesomeIcon icon={faDashboard} className="text-purple-800 text-xl" />
+                                                        <span className="ml-3 text-lg">
+                                                            <a href='/dashboard' className="hover:underline">Dashboard</a>
+                                                        </span>
+                                                    </li>
+                                                    <li className="flex items-center bg-gray-100 h-16 w-full p-3 rounded-xl hover:bg-gray-300 transition-all">
+                                                        <FontAwesomeIcon icon={faCartArrowDown} className="text-purple-800 text-xl" />
+                                                        <span className="ml-3 text-lg">
+                                                            <a href='/userProducts' className="hover:underline">My Products</a>
+                                                        </span>
+                                                    </li>
+                                                </div>
 
-                    <div className={`fixed right-0 top-0 h-full sm:w-80 w-48 bg-white shadow-lg transform transition-transform ease-in-out duration-300 z-50 ${side ? 'translate-x-0' : 'translate-x-full'}`}>
-                        <div className="p-4">
-                            <h2 className="text-2xl font-semibold mb-4">Your Account</h2>
-                            <ul className="space-y-4">
-                                <li className="flex items-center">
-                                    <FontAwesomeIcon icon={faUser} className="text-purple-800" />
-                                    <span className="ml-2">Username: Irshad</span>
-                                </li>
-                                <li className="flex items-center">
-                                    <FontAwesomeIcon icon={faEnvelope} className="text-purple-800" />
-                                    <span className="ml-2">Email: irshad@gmail.com</span>
-                                </li>
-                                <li className="flex items-center">
-                                    <FontAwesomeIcon icon={faCartArrowDown} className="text-purple-800 hover:underline" />
-                                    <span className="ml-2"><a href='/userProducts'>My Products</a></span>
-                                </li>
-                                <li className="flex items-center">
-                                    <FontAwesomeIcon icon={faPen} className="text-purple-800 hover:underline" />
-                                    <span className="ml-2"><a href='/userPosts'>My Posts</a></span>
-                                </li>
-                                <li className="flex items-center">
-                                    <FontAwesomeIcon icon={faCog} className="text-purple-800 hover:underline" />
-                                    <span className="ml-2">Settings</span>
-                                </li>
-                                <li className="flex items-center">
-                                    <FontAwesomeIcon icon={faSignOutAlt} className="text-purple-800 hover:underline" />
-                                    <span className="ml-2"><a href='/login'>Logout</a></span>
-                                </li>
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                    <li className="flex items-center bg-gray-100 h-16 w-full p-3 rounded-xl hover:bg-gray-300 transition-all">
+                                                        <FontAwesomeIcon icon={faPen} className="text-purple-800 text-xl" />
+                                                        <span className="ml-3 text-lg">
+                                                            <Link to={'/userPosts'} className='hover:underline'>My Posts</Link>
+                                                        </span>
+                                                    </li>
+                                                    <li className="flex items-center bg-gray-100 h-16 w-full p-3 rounded-xl hover:bg-gray-300 transition-all">
+                                                        <FontAwesomeIcon icon={faCog} className="text-purple-800 text-xl" />
+                                                        <span className="ml-3 text-lg">Settings</span>
+                                                    </li>
+                                                </div>
+
+                                                <li className="flex items-center bg-gray-100 h-12 w-full p-3 rounded-xl hover:bg-gray-300 transition-all">
+                                                    <FontAwesomeIcon icon={faMessage} className="text-purple-800 text-xl" />
+                                                    <span className="ml-3 text-lg">
+                                                        <a href='/OrderMessage' className="hover:underline">Order Messages</a>
+                                                    </span>
+                                                </li>
+                                                <li className="flex items-center bg-gray-100 h-12 w-full p-3 rounded-xl hover:bg-gray-300 transition-all">
+                                                    <FontAwesomeIcon icon={faSignOutAlt} className="text-purple-800 text-xl" />
+                                                    <button className="ml-3 text-lg" onClick={HandleLogOut}>Logout</button>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </>
+
+                                    :
+                                    <>
+                                        <div className='space-y-2 p-4'>
+                                            <li className="flex items-center bg-gray-200 h-12 w-full p-2 rounded-xl hover:underline">
+                                                <FontAwesomeIcon icon={faReorder} className="text-purple-800 hover:underline" />
+                                                <span className="ml-2"><a href='/userOrders'>My Orders</a></span>
+                                            </li>
+                                            <li className="flex items-center bg-gray-200 h-12 w-full p-2 rounded-xl hover:underline">
+                                                <FontAwesomeIcon icon={faCog} className="text-purple-800 hover:underline" />
+                                                <span className="ml-2">Settings</span>
+                                            </li>
+                                            <li className="flex items-center bg-gray-200 h-12 w-full p-2 rounded-xl hover:underline">
+                                                <FontAwesomeIcon icon={faSignOutAlt} className="text-purple-800 hover:underline" />
+                                                <button className='ml-2' onClick={HandleLogOut}>Logout</button>
+                                            </li>
+                                        </div>
+                                    </>
+                                }
                             </ul>
                         </div>
-                    </div>
+                    </div> 
+                    <></>
                 </>
             ) : (
-                // <div className="flex items-center justify-end space-x-4 p-4 bg-blue-600 mt-5">
-                //     <Link to="/signup" className="flex items-center text-white hover:text-gray-200">
-                //         <FontAwesomeIcon icon={faUserPlus} className="mr-2" />
-                //         <p className="font-medium">Signup</p>
-                //     </Link>
-                //     <Link to="/login" className="flex items-center text-white hover:text-gray-200">
-                //         <FontAwesomeIcon icon={faSignInAlt} className="mr-2" />
-                //         <p className="font-medium">Login</p>
-                //     </Link>
-                // </div>
                 <HeaderWithAuthPanel/>
             )}
         </header>
@@ -140,68 +270,23 @@ const Header = () => {
 
 
 
-// PROFILE BUTTON------
-// PROFILE BUTTON------
-// PROFILE BUTTON------
-
-function ProfileButton() {
-    const [isHovered, setHovered] = useState(false);
-
-    const toggleHover = () => {
-        setHovered(!isHovered);
-    };
-
-    return (
-        <div 
-            className="relative flex items-center justify-center" 
-            onMouseEnter={toggleHover} 
-            onMouseLeave={toggleHover}
-        >
-            {/* Profile Icon */}
-            <button 
-                onClick={setUp} 
-                className={`text-white transition-transform duration-300 ${
-                    isHovered ? 'transform scale-110' : ''
-                }`}
-            >
-                <FontAwesomeIcon icon={faUser} className="w-6 h-6" />
-            </button>
-
-            {/* Hover Text */}
-            {isHovered && (
-                <span className="absolute top-full mt-2 text-sm text-white bg-blue-600 px-2 py-1 rounded shadow-lg transform transition-opacity duration-300 opacity-100">
-                    Profile
-                </span>
-            )}
-        </div>
-    );
-}
-
-
-
-
-
-
 
 
 function HeaderWithAuthPanel() {
     const [isAuthPanelOpen, setAuthPanelOpen] = useState(false);
 
+    
     const toggleAuthPanel = () => {
         setAuthPanelOpen(!isAuthPanelOpen);
     };
 
     return (
         <div className=" p-1 flex items-center justify-between">
-            {/* Logo or Left side content */}
-            {/* <div className="text-white font-bold"></div> */}
-
-            {/* Toggle Button for Mobile View */}
+            
             <button onClick={toggleAuthPanel} className="md:hidden text-white">
                 <FontAwesomeIcon icon={faBars} className="w-8 h-8" />
             </button>
 
-            {/* Desktop Links (hidden on mobile) */}
             <div className="hidden md:flex items-center justify-end space-x-4">
                 <Link to="/signup" className="flex items-center text-white hover:text-gray-200">
                     <FontAwesomeIcon icon={faUserPlus} className="mr-2" />
@@ -213,12 +298,11 @@ function HeaderWithAuthPanel() {
                 </Link>
             </div>
 
-            {/* Background Overlay for Mobile */}
+            
             {isAuthPanelOpen && (
                 <div className="fixed inset-0 bg-black opacity-50 z-40" onClick={toggleAuthPanel}></div>
             )}
 
-            {/* Sliding Side Panel (Mobile View) */}
             <div className={`fixed right-0 top-0 h-full w-60 bg-white shadow-lg transform transition-transform ease-in-out duration-300 z-50 ${isAuthPanelOpen ? 'translate-x-0' : 'translate-x-full'}`}>
                 <div className="p-4">
                     <h2 className="text-2xl font-semibold mb-4">Authentication</h2>

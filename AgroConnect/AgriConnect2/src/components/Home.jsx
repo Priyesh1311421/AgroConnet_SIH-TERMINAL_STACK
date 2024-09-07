@@ -2,6 +2,7 @@ import React from 'react';
 import { FaLeaf, FaTractor, FaSeedling } from 'react-icons/fa';
 
 const FarmingHomePage = () => {
+    
     return (
         <div className="bg-green-50 min-h-screen min-w-full flex flex-col">
         {/* Hero Section */}
