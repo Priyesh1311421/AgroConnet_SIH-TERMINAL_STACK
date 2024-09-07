@@ -9,7 +9,7 @@ const getBlogs = async (req, res) => {
     } catch (error) {
         res.status(404).json({ message: error.message });
     }
-};
+}; // Adjust the path as necessary
 
 // Get a blog by id
 const getBlog = async (req, res) => {
@@ -52,7 +52,7 @@ const createBlog = async (req, res) => {
     }
 };
 
-// Update a blog
+// Update a blog 
 const updateBlog = async (req, res) => {
     const { id } = req.params;
     const blog = req.body;
@@ -100,10 +100,22 @@ const deleteBlog = async (req, res) => {
 const addLike = async (req, res) => {
     try {
         const blog = await Blog.findById(req.params.id);
+        const { userId, userType } = req.body;
+
         if (!blog) {
             return res.status(404).json({ message: 'Blog not found' });
         }
+
+        const alreadyLiked = blog.likedBy.some(
+            (like) => like.userId.toString() === userId && like.userType === userType
+        );
+
+        if (alreadyLiked) {
+            return res.status(400).json({ message: 'User has already liked this blog' });
+        }
+
         blog.likes += 1;
+        blog.likedBy.push({ userId, userType });
         await blog.save();
         res.status(200).json(blog);
     } catch (error) {
@@ -131,6 +143,18 @@ const addComment = async (req, res) => {
     }
 };
 
+
+// get the blog by a farmer
+const getBlogsByFarmer = async (req, res) => {
+    try {
+      const { id } = req.params;
+      const blogs = await Blog.find({ author: id });
+      res.status(200).json(blogs);
+    } catch (error) {
+      res.status(500).json({ message: 'Error fetching blogs by farmer ID', error });
+    }
+};
+
 module.exports = {
     deleteBlog,
     updateBlog,
@@ -139,4 +163,5 @@ module.exports = {
     getBlogs,
     addLike,
     addComment,
+    getBlogsByFarmer,
 };

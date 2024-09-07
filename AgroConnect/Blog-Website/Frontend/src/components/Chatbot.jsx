@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import ReactMarkdown from 'react-markdown';
 import 'tailwindcss/tailwind.css';
+import './Chatbot.css'; // Import the CSS file
 
 const apiKey = 'AIzaSyBU-Kax_hgms1QLa7eEjw7zv_Evm_JT2lE'; // Replace with your API key
 
@@ -75,8 +76,8 @@ const Chatbot = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col justify-center items-center p-4">
-      <div className="bg-white rounded-lg shadow-lg p-6 max-w-4xl w-full">
+    <div className=" min-w-[1200px] app-container relative min-h-screen flex flex-col justify-center items-center">
+      <div className="relative z-10 bg-white rounded-lg shadow-lg p-6 max-w-4xl w-full">
         <h1 className="text-2xl font-semibold text-gray-800 mb-4">Gemini Chat</h1>
 
         {/* Input Box */}

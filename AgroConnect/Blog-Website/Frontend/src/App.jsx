@@ -4,6 +4,8 @@ import BlogList from './components/BlogList';
 import BlogDetail from './components/BlogDetail';
 import CreateBlog from './components/CreateBlog';
 import Chatbot from './components/Chatbot';
+import BlogManager from './components/BlogManager';
+import UpdateBlog from './components/UpdateBlog';
 
 const App = () => {
     const farmerId = localStorage.getItem('farmerId');
@@ -17,19 +19,13 @@ const App = () => {
                         <Route path="/" element={<BlogList farmerId={farmerId} />} />
                         <Route path="/blogs/:id" element={<BlogDetail />} />
                         {farmerId && <Route path="/create" element={<CreateBlog />} />}
+                        <Route path="/manage-blogs" element={<BlogManager />} />
+                        <Route path="/update/:id" element={<UpdateBlog />} />
                         <Route path='/chatbot' element={<Chatbot/>}/>
                     </Routes>
                 </main>
             </div>
         </Router>
-    );
-};
-
-const Header = () => {
-    return (
-        <header className="bg-blue-600 text-white p-4 sticky top-0 flex justify-between items-center">
-            <h1 className="text-3xl">Blog Application</h1>
-        </header>
     );
 };
 

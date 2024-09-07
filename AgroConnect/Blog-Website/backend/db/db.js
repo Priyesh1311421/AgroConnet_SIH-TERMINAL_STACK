@@ -104,8 +104,16 @@ const blogSchema = new mongoose.Schema({
     },
     likedBy: [
         {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'User',
+            userId: {
+                type: mongoose.Schema.Types.ObjectId,
+                required: true,
+                refPath: 'likedBy.userType'
+            },
+            userType: {
+                type: String,
+                required: true,
+                enum: ['User', 'Farmer']
+            }
         }
     ],
     comments: [
